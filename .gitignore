@@ -1,0 +1,9 @@
+*.pyc
+__pycache__
+*.pth
+*.pt
+*.out
+*.txt
+*.json
+*.lock
+!checkpoints/tokenizers/README.md
