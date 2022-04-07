@@ -73,7 +73,7 @@ def main(args):
 	print('################# INFO ####################')
 	print('Will be dumping to: {}'.format(args.feats_root))
 	print('Found {} videos'.format(len(vidpaths)))
-	input('Press Enter to continue. Or Press Ctrl + C to abort')
+	# input('Press Enter to continue. Or Press Ctrl + C to abort')
 
 	featpaths = [f.replace(args.videos_root, args.feats_root)[:-3] + '.npy' for f in vidpaths]
 	all_folders = np.unique([os.path.dirname(f) for f in featpaths])
