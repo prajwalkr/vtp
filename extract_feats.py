@@ -15,7 +15,7 @@ from glob import glob
 from torch.cuda.amp import autocast
 
 def init(args):
-	data_util = VideoDataset(args, mode='val', inference=True)
+	data_util = VideoDataset(args)
 
 	model = builders[args.builder](data_util.vocab_size + 1, args.feat_dim, N=args.num_blocks, 
 							d_model=args.hidden_units, 
@@ -27,14 +27,11 @@ def dump_feats(vid_paths, feat_paths, model, data_util):
 	def save_feat(vidpath, featpath, model):
 		if os.path.exists(featpath): return
 
-		src = torch.FloatTensor(data_util.input_transform(data_util.read_video(vidpath), 
-								augment=False)).unsqueeze(0)
-
-		src = src.permute(0, 4, 1, 2, 3)
-		src_mask = torch.ones((1, 1, src.size(2)))
-		with torch.no_grad(): src = augmentor(src, train_mode=False).detach()
+		src = torch.FloatTensor(data_util.read_video(vidpath)).unsqueeze(0)
 
 		with torch.no_grad():
+			src = augmentor(src).detach()
+			src_mask = torch.ones((1, 1, src.size(2)))
 			with autocast():
 				src = src.cuda()
 				src_mask = src_mask.cuda()

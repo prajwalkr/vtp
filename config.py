@@ -5,6 +5,8 @@ bos_token = '<bos>'
 eos_token = '<eos>'
 unk_token = '<unk>'
 
+start_symbol, end_symbol = 100, 101
+
 def str2bool(v):
     if isinstance(v, bool):
        return v
@@ -23,12 +25,15 @@ def load_args():
 
   parser.add_argument('--builder', default='base')
   parser.add_argument('--ckpt_path', default=None)
+  parser.add_argument('--cnn_ckpt_path', default=None)
   parser.add_argument('--fp16', default=True, type=str2bool)
 
   # Data
   parser.add_argument('--feat_dim', type=int, default=512, help='Video features dimension - used if loading features directly (featurizer=False)')
   parser.add_argument('--videos_root', type=str)
   parser.add_argument('--feats_root', type=str)
+
+  parser.add_argument('--test_pkl_file', type=str, help='Path to the pickle file for LRS2/LRS3 to compute WER, CER scores')
 
   # Transformer config
   parser.add_argument('--num_blocks', type=int, default=6, help='# of transformer blocks')
@@ -49,6 +54,18 @@ def load_args():
   parser.add_argument('--file_list', type=str, help='(List of) video file paths relative to videos_folder, can also be regex')
   parser.add_argument('--num_parts', type=int, default=1, help='Partwise feature dumping, how many parts?')
   parser.add_argument('--part', type=int, default=0, help='Partwise feature dumping, which part?')
+
+  # inference params
+  parser.add_argument('--fpath', type=str, default=None, help='The path to the video file')
+  parser.add_argument('--max_decode_len', type=int, default=-1)
+  parser.add_argument('--chunk_size', type=int, default=9, help='Chunk input video every `chunk_size` seconds')
+  parser.add_argument('--ss', type=float, default=None, help='Crop video from this second')
+  parser.add_argument('--es', type=float, default=None, help='Crop video up to this second')
+
+  parser.add_argument('--beam_size', type=int, default=30, help='The beam width')
+  parser.add_argument('--beam_len_alpha', type=float, default=1, help='Length penalty hyperparameter')
+  parser.add_argument('--lm_alpha', type=float, default=0., help='LM weight hyperparameter')
+
 
   args = parser.parse_args()
 
