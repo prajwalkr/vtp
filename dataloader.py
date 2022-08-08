@@ -4,9 +4,6 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 from torch.autograd import Variable
 import pandas as pd
-from utils import random_frame_drop, random_frame_duplicate
-
-from torch.utils import data as data_utils
 
 import numpy as np
 from config import load_args
@@ -15,10 +12,6 @@ args = load_args()
 
 from decord import VideoReader
 from glob import glob
-
-# GPU-based augmentation utils:
-import kornia.augmentation as K
-import torchvision.transforms.functional as TF
 
 from config import load_args, pad_token, bos_token, eos_token, unk_token
 from transformers import AutoTokenizer
@@ -84,6 +77,9 @@ class VideoDataset(object):
 
 		return frames
 
+	def to_ids(self, text):
+		return [t - 1 for t in tokenizer('<bos> ' + text + ' <eos>')['input_ids']]
+		
 	def to_tokens(self, ids):
 		return tokenizer.convert_tokens_to_string(\
 				tokenizer.convert_ids_to_tokens([t + 1 for t in ids])).replace(\

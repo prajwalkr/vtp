@@ -17,6 +17,7 @@ from torch.cuda.amp import autocast
 from search import beam_search
 
 args = load_args()
+augmentor = AugmentationPipeline(args)
 
 def forward_pass(model, src, src_mask):
 	encoder_output, src_mask = model.encode(src, src_mask)
@@ -56,7 +57,7 @@ def minmax_normalize(values):
 	v = (v - v.min()) / (v.max() - v.min())
 	return v
 
-def run(vidpath, dataloader, model, lm=None, lm_tokenizer=None, display=True, k=5):
+def run(vidpath, dataloader, model, lm=None, lm_tokenizer=None, display=True):
 	frames = torch.FloatTensor(dataloader.read_video(vidpath)).unsqueeze(0)
 	frames = augmentor(frames).detach()
 
@@ -104,14 +105,17 @@ def run(vidpath, dataloader, model, lm=None, lm_tokenizer=None, display=True, k=
 
 		preds.append(pred)
 
-	print(' '.join(preds))
+	pred = ' '.join(preds)
+	if display: print(pred)
+	return pred
 
 def main(args):
 	video_loader = VideoDataset(args)
 
 	model = builders[args.builder](video_loader.vocab_size + 1, args.feat_dim, 
 							N=args.num_blocks, d_model=args.hidden_units, 
-							h=args.num_heads, dropout=args.dropout_rate).to(args.device)
+							h=args.num_heads, 
+							dropout=args.dropout_rate).to(args.device).eval()
 
 	assert args.ckpt_path is not None, 'Specify a trained checkpoint!'
 	assert args.cnn_ckpt_path is not None, 'Specify a trained visual backbone checkpoint!'
@@ -129,6 +133,5 @@ def main(args):
 	return model, video_loader, lm, lm_tokenizer
 
 if __name__ == '__main__':
-	augmentor = AugmentationPipeline(args)
 	model, video_loader, lm, lm_tokenizer = main(args)
 	run(args.fpath, video_loader, model, lm, lm_tokenizer)
